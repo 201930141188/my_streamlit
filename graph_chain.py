@@ -202,9 +202,11 @@ def build_graph_qa_chain(llm, graph, entity_cache):
         corrected_entities = correct_all_entities(extracted.dict(), entity_cache)
         print(corrected_entities)
 
-        if len(corrected_entities['Keywords']) < len(extracted.dict()['Keywords']):
+        if (len(corrected_entities['Keywords']) < len(extracted.dict()['Keywords'])) and \
+            all(not value for key, value in corrected_entities.items() if key != 'Keywords'):
             print("keyword error")
             return None
+
 
         # Step 3: 生成 Cypher
         cypher = cypher_chain.invoke({
