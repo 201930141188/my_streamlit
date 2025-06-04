@@ -9,9 +9,7 @@ from weaviate.classes.init import Auth
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Dict, Tuple
 from langchain.schema import Document
-from langchain.vectorstores import FAISS
 from langchain.prompts import ChatPromptTemplate
-from langchain.document_loaders import TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter, MarkdownHeaderTextSplitter
 
 all_documents = []
