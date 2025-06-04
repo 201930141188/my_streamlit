@@ -2,8 +2,6 @@ import os
 import json
 import re
 from typing import Set, List
-from PIL import Image
-import matplotlib.pyplot as plt
 from langchain.schema import Document
 from langchain.vectorstores import FAISS
 from langchain.embeddings import HuggingFaceBgeEmbeddings
