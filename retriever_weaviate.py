@@ -3,8 +3,6 @@ import json
 import re
 from typing import Set, List
 from langchain.schema import Document
-from langchain.vectorstores import FAISS
-from langchain.embeddings import HuggingFaceBgeEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter, MarkdownHeaderTextSplitter
 from langchain.document_loaders import TextLoader
 from langchain.prompts import ChatPromptTemplate
