@@ -1,7 +1,5 @@
 import logging
 import asyncio
-from PIL import Image
-import matplotlib.pyplot as plt
 import json
 from neo4j import GraphDatabase
 from py2neo import Graph as Py2NeoGraph
