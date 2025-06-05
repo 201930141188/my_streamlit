@@ -34,11 +34,11 @@ if "api_key" not in st.session_state:
 if "base_url" not in st.session_state:
     st.session_state.base_url = ""
 if "weaviate_url" not in st.session_state:
-    st.session_state.weaviate_url = ""
+    st.session_state.weaviate_url = st.secrets.get("WEAVIATE_URL", "")
 if "weaviate_key" not in st.session_state:
-    st.session_state.weaviate_key = ""
+    st.session_state.weaviate_key = st.secrets.get("WEAVIATE_KEY", "")
 if "huggingface_key" not in st.session_state:
-    st.session_state.huggingface_key = ""
+    st.session_state.huggingface_key = st.secrets.get("HUGGINGFACE_KEY", "")
 if "model" not in st.session_state:
     st.session_state.model = "qwen-max-latest"
 if "history" not in st.session_state:
@@ -79,11 +79,8 @@ with st.sidebar:
         model_options = ['qwen-max-2025-01-25', 'qwen-max', 'qwen-max-latest', 'qwen-max-0428', "deepseek-v3"]  # 添加可选模型
         st.session_state.model = st.selectbox("Model Selection", model_options, index=model_options.index(st.session_state.model))
 
-        show_debug = st.checkbox("Display Question Type Selection")
-        show_ori = st.checkbox("Display Original Answer")
         show_answer = st.checkbox("Display Final Answer")
         show_context = st.checkbox("Display Reference", value=True)
-        show_result = st.checkbox("Display Result List")
 
     with st.expander("🔍 Search refs", expanded=False):     
         selected_paper_prefix = st.text_input("Title", key="prefix_input")
@@ -179,7 +176,7 @@ if st.button("Question submit") and question.strip():
                                         st.markdown(detail.get('context'), unsafe_allow_html=True)
                                         st.markdown(f"Source title of the reference: {detail.get('title')}")
                                         if detail['analyze']:
-                                            st.markdown(f"Analyze:{detail.get('analyze', '')}")
+                                            st.markdown(f"Analyze{detail.get('analyze', '')}")
                                             
         
                     if show_ori and st.session_state.ori_answer:
