@@ -72,9 +72,9 @@ with st.sidebar:
     with st.expander("🔧 Setting", expanded=True):
         st.session_state.api_key = st.text_input("OpenAI API Key", type="password", value=st.session_state.api_key)
         st.session_state.base_url = st.text_input("Base URL", value=st.session_state.base_url)
-        st.session_state.weaviate_url = st.text_input("Weaviate URL", value=st.session_state.weaviate_url)
-        st.session_state.weaviate_key = st.text_input("Weaviate API Key", type="password", value=st.session_state.weaviate_key)
-        st.session_state.huggingface_key = st.text_input("Huggingface API Key", value=st.session_state.huggingface_key)
+        st.text_input("Weaviate URL", key="weaviate_url")
+        st.text_input("Weaviate API Key", type="password", key="weaviate_key")
+        st.text_input("Huggingface API Key", type="password", key="huggingface_key")
 
         model_options = ['qwen-max-2025-01-25', 'qwen-max', 'qwen-max-latest', 'qwen-max-0428', "deepseek-v3"]  # 添加可选模型
         st.session_state.model = st.selectbox("Model Selection", model_options, index=model_options.index(st.session_state.model))
