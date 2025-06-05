@@ -8,7 +8,8 @@ from determine_database import determine_database
 from agent import agent
 
 
-MERGED_JSON_PATH = 'papers.json'  # 替换为实际路径
+MERGED_JSON_PATH = 'papers.json'  
+PAPER_INFO_PATH = 'paper_info.json'
 
 # ============ 页面设置 ============
 st.set_page_config(page_title="Agent", layout="wide")
@@ -27,6 +28,15 @@ def load_file_names(data_dict):
 paper_data = load_paper_data(MERGED_JSON_PATH)
 file_names = load_file_names(paper_data)
 
+paper_info_dict = load_paper_data(PAPER_INFO_PATH)
+
+def normalize_title(title):
+    return title.lower().replace(":", "").replace("?", "").replace("/", "").replace("_", "").replace("<", "").strip()
+
+
+paper_info_dict_normalized = {
+    normalize_title(title): info for title, info in paper_info_dict.items()
+}
 
 # ============ 初始化 session_state ============
 if "api_key" not in st.session_state:
@@ -47,8 +57,6 @@ if "parsed_output" not in st.session_state:
     st.session_state.parsed_output = None
 if "result" not in st.session_state:
     st.session_state.result = {}
-if "ori_answer" not in st.session_state:
-    st.session_state.ori_answer = None
 if "answer" not in st.session_state:
     st.session_state.answer = None
 if "answer_graph" not in st.session_state:
@@ -76,7 +84,7 @@ with st.sidebar:
         st.text_input("Weaviate API Key", type="password", key="weaviate_key")
         st.text_input("Huggingface API Key", type="password", key="huggingface_key")
 
-        model_options = ['qwen-max-2025-01-25', 'qwen-max', 'qwen-max-latest', 'qwen-max-0428', "deepseek-v3"]  # 添加可选模型
+        model_options = ['qwen-max-latest', "deepseek-v3"]  # 添加可选模型
         st.session_state.model = st.selectbox("Model Selection", model_options, index=model_options.index(st.session_state.model))
 
         show_answer = st.checkbox("Display Final Answer")
@@ -154,29 +162,72 @@ if st.button("Question submit") and question.strip():
                         "answer": result['answer'],
                     }
                     
-                    # 避免重复添加（例如刷新页面后再次添加）
                     if not any(record["question"] == question for record in st.session_state.history):
                         st.session_state.history.append(new_record)
 
-                        # 保存到 JSON 文件
                         with open(HISTORY_FILE, "w", encoding="utf-8") as f:
                             json.dump(st.session_state.history, f, ensure_ascii=False, indent=4)
 
                     st.subheader("📊 Agent Result")
 
+                    title_to_index = {}
+                    reference_list = []
+                    current_index = 1
+
+                    for item in st.session_state.result:
+                        for detail in item.get("details", []):
+                            title = detail.get("title")
+                            if title not in title_to_index:
+                                title_to_index[title] = current_index
+                                reference_list.append({
+                                    "index": current_index,
+                                    "title": title,
+                                    "context": detail.get("context"),
+                                    "analyze": detail.get("analyze")
+                                })
+                                current_index += 1
+
                     for idx, item in enumerate(st.session_state.result):
-                        if idx == 0:
+                        if idx == 0 and idx == len(st.session_state.result) - 1:
                             st.markdown(item['ori answer'])
                         else:
-                            st.markdown(item['answer'], unsafe_allow_html=True)
+                            answer = item['answer']
+                            details = item.get('details', [])
+                            current_ref_ids = []
+                            for d in details:
+                                ref_id = title_to_index.get(d['title'])
+                                if ref_id is not None:
+                                    current_ref_ids.append(ref_id)
+                            current_ref_ids = sorted(set(current_ref_ids))
+                            ref_marks = ''.join([f'[{i}]' for i in current_ref_ids])
+                            st.markdown(f"{answer} {ref_marks}", unsafe_allow_html=True)
                             if show_context and "details" in item:
                                 with st.expander("🔍 References of the answer"):
-                                    for _, detail in enumerate(item['details']):
-                                        st.markdown("Reference:")
+                                    for detail in details:
+                                        ref_index = title_to_index.get(detail['title'])
+                                        st.markdown(f"Reference[{ref_index}]:")
                                         st.markdown(detail.get('context'), unsafe_allow_html=True)
                                         st.markdown(f"Source title of the reference: {detail.get('title')}")
                                         if detail['analyze']:
-                                            st.markdown(f"Analyze{detail.get('analyze', '')}")               
+                                            st.markdown(f"Analyze{detail.get('analyze', '')}")
+
+                    with st.expander("📚 All References Used"):
+                        for ref in reference_list:
+                            idx = ref['index']
+                            raw_title = ref['title']
+                            norm_title = normalize_title(raw_title)
+                    
+                            if norm_title in paper_info_dict_normalized:
+                                paper_info = paper_info_dict_normalized[norm_title]
+                                authors_str = ', '.join(paper_info['authors'])
+                                source = paper_info['source']
+                                year = paper_info['year']
+                                st.markdown(f"[{idx}] {authors_str}, {raw_title}, {source}, {year}")
+                            else:
+                                st.markdown(f"[{idx}] {raw_title}")
+                                st.markdown(f"- Context: {ref['context']}", unsafe_allow_html=True)
+                                if ref['analyze']:
+                                    st.markdown(f"- Analyze: {ref['analyze']}")              
                                             
                     if show_answer and st.session_state.answer:
                         st.subheader("📊 Answer")
@@ -231,7 +282,6 @@ if st.button("Question submit") and question.strip():
                                     for part in item["contexts"]:
                                         st.markdown(part.get('chunk'), unsafe_allow_html=True)
                                         st.markdown(f"Source Title of the reference: {part.get('title')}")
-                                    
 
                             elif db == "Literature Graph Database":
                                 information = item['contexts']
@@ -240,8 +290,6 @@ if st.button("Question submit") and question.strip():
                                         st.json(information['context'])
                                 else:
                                     st.markdown("No Relative Papers Found")
-
-                    st.session_state.result = result_list
                                     
             except Exception as e:
                 st.error(f"Error：{e}")
