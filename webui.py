@@ -12,7 +12,7 @@ MERGED_JSON_PATH = 'papers.json'  # 替换为实际路径
 
 # ============ 页面设置 ============
 st.set_page_config(page_title="Agent", layout="wide")
-st.title("🔍 Kerr Frequency Combs Q&A System")
+st.title("🔍 An Expert System of Kerr Comb")
 
 # ====== 加载数据 ======
 @st.cache_data
