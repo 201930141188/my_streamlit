@@ -246,6 +246,12 @@ if st.button("Question submit") and question.strip():
             except Exception as e:
                 st.error(f"Error：{e}")
 
+if st.button("🔄 reset settings"):
+    st.session_state.weaviate_url = st.secrets.get("WEAVIATE_URL", "")
+    st.session_state.weaviate_key = st.secrets.get("WEAVIATE_KEY", "")
+    st.session_state.huggingface_key = st.secrets.get("HUGGINGFACE_KEY", "")
+    st.experimental_rerun()
+
 
 # ============ 清空历史记录按钮 ============
 if st.button("🧹 Remove all records"):
