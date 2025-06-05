@@ -2,7 +2,11 @@ langchain==0.3.3
 langchain-core==0.3.51
 langchain-openai==0.2.10
 langchain-text-splitters==0.3.0
+matplotlib==3.7.2
+matplotlib-inline==0.1.6
 neo4j==5.27.0
+python-dotenv==1.0.1
+pillow==10.4.0
 py2neo==2021.2.4
 pydantic==2.9.2
 RapidFuzz==3.10.0
