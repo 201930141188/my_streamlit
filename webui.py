@@ -176,23 +176,12 @@ if st.button("Question submit") and question.strip():
                                         st.markdown(detail.get('context'), unsafe_allow_html=True)
                                         st.markdown(f"Source title of the reference: {detail.get('title')}")
                                         if detail['analyze']:
-                                            st.markdown(f"Analyze{detail.get('analyze', '')}")
+                                            st.markdown(f"Analyze{detail.get('analyze', '')}")               
                                             
-        
-                    if show_ori and st.session_state.ori_answer:
-                        st.subheader("📊 Original Answer(Only for Text Database)")
-                        st.text_area("", value=result['text'], height=400)
-
                     if show_answer and st.session_state.answer:
                         st.subheader("📊 Answer")
                         st.markdown(result['answer'])
 
-                    if show_result and st.session_state.result:
-                        with st.expander("Json Result"):
-                            st.subheader("📊 Result List:")
-                            st.json(result['result'])
-
-               
                 elif question_type == "Entity-Type":
                     st.session_state.answer_graph = result["answer"]
                     entities = result["extract"]
@@ -253,20 +242,10 @@ if st.button("Question submit") and question.strip():
                                     st.markdown("No Relative Papers Found")
 
                     st.session_state.result = result_list
-    
-                    if show_result and st.session_state.result:
-                            with st.expander("Json Result"):
-                                st.subheader("📊 Result List:")
-                                st.json(result_list)
                                     
             except Exception as e:
                 st.error(f"Error：{e}")
 
-
-# ============ 🐞 调试信息展示 ============
-if show_debug and st.session_state.parsed_output:
-    st.subheader("🛠 Question Type Selection")
-    st.json(st.session_state.parsed_output)
 
 # ============ 清空历史记录按钮 ============
 if st.button("🧹 Remove all records"):
