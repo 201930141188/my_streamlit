@@ -167,6 +167,7 @@ def build_graph_qa_chain(llm, graph, entity_cache):
     
     Turn the user's question into a valid Cypher query according to the above rules.
     Generate Cypher query fully based on the given entities extracted from the user question.
+    The result name MUST be the same as the node or attributes name(such as p.Author as Author).
     Confirm only the Cypher code output without interpretation.
     
     User question:{question}.'''
