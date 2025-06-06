@@ -7,6 +7,10 @@ from pathlib import Path
 from determine_database import determine_database
 from agent import agent
 
+import streamlit.components.v1 as components
+import networkx as nx
+from visualize_graph import context_and_entities_to_graph, visualize_graph
+
 
 MERGED_JSON_PATH = 'papers.json'  
 PAPER_INFO_PATH = 'paper_info.json'
@@ -124,6 +128,16 @@ with st.sidebar:
 st.subheader("💬 Please Enter Your Question:")
 question = st.text_area("Question：", height=150, placeholder="Such as：What are the limitations of Kerr frequency combs ...")
 
+st.markdown("""
+<div style="background-color: #f0f8ff; padding: 15px; border-left: 5px solid #1890ff; border-radius: 5px; font-size: 16px;">
+<b>Tips：</b>Please distinguish the reference paragraphs of the answer and the references marked in the reference paragraphs<br>
+You can search the  references marked in the reference paragraphs in the sidebar.
+</div>
+
+""", unsafe_allow_html=True)
+
+st.markdown("")
+
 if st.button("Question submit") and question.strip():
     if not st.session_state.api_key or not st.session_state.base_url:
         st.error("Please input API Key and Base URL in the sidebar.")
@@ -236,7 +250,7 @@ if st.button("Question submit") and question.strip():
                 elif question_type == "Entity-Type":
                     st.session_state.answer_graph = result["answer"]
                     entities = result["extract"]
-                    corrected = result["entities"]
+                    corrected = result["entities"].dict()
                     cypher = result["cypher"]
                     retrieved = result['context']
 
@@ -247,6 +261,15 @@ if st.button("Question submit") and question.strip():
                     if show_context:
                         with st.expander("📊 Retrieved Result"):
                             st.json(retrieved)
+
+                    G = context_and_entities_to_graph(retrieved, corrected)
+
+                    html_path = visualize_graph(G)
+
+                    with open(html_path, 'r', encoding='utf-8') as f:
+                        html_content = f.read()
+                    
+                    components.html(html_content, height=600, scrolling=True)
 
                 elif question_type == "Mixed-Type":
                     response = result["response"]
